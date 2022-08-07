@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0c8c4ca027f30d2ec85215fb5b4599ed95957764',
+  'angle_revision': '6b248a6886ada8d245ebe8a4d2efd99a2a573c37',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -324,7 +324,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Fuchsia sdk
   # and whatever else without interference from each other.
-  'fuchsia_version': 'version:9.20220806.0.1',
+  'fuchsia_version': 'version:9.20220806.1.1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -412,7 +412,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e06266e0e04c56aadbd78ff95752144bb8dcbb31',
+  'dawn_revision': '66fbd2c1ecefd33f8ec5ec6327f15a746ff041e4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -952,7 +952,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'oQVmxoZfDdo9Mj05wSSn9d3L7V49brnXoS-_uhaTmO4C',
+          'version': 'pGixzD_GPP5LYpq_3Ynl0_u7lAK5-APenoVgA7rTxI0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1805,7 +1805,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0395ae83ea3761d769e13d716120cb682c1aa93f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@019835a792f22ecb9db8f3c4cce20648bce1749e',
     'condition': 'checkout_src_internal',
   },
 
