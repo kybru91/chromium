@@ -304,7 +304,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'aec91724bd33f20d216d24ecf4a6b5dd6b91fb39',
+  'skia_revision': 'e846588a085ee6126f797554920aede739ff7e54',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -383,7 +383,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bbd7e330129b4bd97fdff456061aabefcc957943',
+  'devtools_frontend_revision': '33e23fe8b4b71e76a213083476f0a7693c4e6451',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -419,7 +419,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e41f8fcfdb996355a0777dffc3399f1b84673e70',
+  'dawn_revision': 'a3544353e82dd03a2c3f6bf6dc55b3b938d3354f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -770,7 +770,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    '045136595bcb63d20fdf5b1c9e6f2eff3b7e8f7c',
+    'c93877b35eb9e99d39870c11e69526327343c7d6',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -869,7 +869,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'mNdE7JjG1XzGogUTM_AWf2eZ7S0_rb4cIKY1-hLSnMIC',
+          'version': 'RfofwT99yNfWzTmmLkvaAtCGnVWLmK2PVGR9lGoGR8MC',
         },
       ],
       'dep_type': 'cipd',
@@ -880,7 +880,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'acPpnndxkLVNzIy7HWhFBO_x8ekK3eWPCvkN2LMpG3YC',
+          'version': 'MEwjkOjFLDymEGcqbh8Ln6UelgSWJuDvkmreJHSEc8kC',
         },
       ],
       'dep_type': 'cipd',
@@ -891,7 +891,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'A8I-m9jMwqjqwTWPdJuhfje29-1wTW3FYgxJT-8waC4C',
+          'version': '9xod2NiwyoVtB1cdWWTdOsn3gg-Y6ZXYLTkN8CM_HugC',
         },
       ],
       'dep_type': 'cipd',
@@ -1210,7 +1210,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + '1e43180f9aae3ff3d5c7fea30a927ff1aea4f578',
+      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + '6e33669e94ce31de4aa6aaaeafe73cdd50e19926',
     'condition': 'checkout_src_internal',
   },
 
@@ -1929,7 +1929,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'oT93IHYiecMemzY-QXeCm0a97PlaXOeFrXAzaR238o8C',
+        'version': 'B4N0Vbou0A9mLbK2h8J0DsS2p2b6alG6yGktvi870cIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1940,7 +1940,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'UQ1mbt5-LdsQos32EST7h6UjNeZz1NIbIBQPo6fx5_8C',
+        'version': 'hplzpK0RzuvFcloTmR9Bopruebi5lnQDb1mN5gEFz_UC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
