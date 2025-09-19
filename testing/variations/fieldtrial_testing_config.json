@@ -6291,6 +6291,28 @@
             ]
         }
     ],
+    "ClientSideDetectionCreditCardForm": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "HCAcceptanceRate": "1.0",
+                        "SampleRate": "0.0"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionCreditCardForm"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClientSideDetectionOnlyExtractVisualFeatures": [
         {
             "platforms": [
@@ -6424,36 +6446,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CoalesceSelectionchangeEvent"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CollectAndroidFrameTimelineMetricsStudy": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20230926",
-                    "enable_features": [
-                        "CollectAndroidFrameTimelineMetrics"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CollectAndroidFrameTimelineMetricsWebviewStudy": [
-        {
-            "platforms": [
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20240320",
-                    "enable_features": [
-                        "CollectAndroidFrameTimelineMetrics"
                     ]
                 }
             ]
@@ -6657,6 +6649,23 @@
                         "CommitAvailableMemoryPressureThresholds",
                         "PageAllocatorRetryOnCommitFailure",
                         "TerminationTargetPolicy"
+                    ],
+                    "disable_features": [
+                        "CompressParkableStrings"
+                    ]
+                },
+                {
+                    "name": "All_ExceptParkableStrings",
+                    "params": {
+                        "CommitAvailableCriticalThresholdMB": "1000",
+                        "CommitAvailableModerateThresholdMB": "2000"
+                    },
+                    "enable_features": [
+                        "BoostClosingTabs",
+                        "CommitAvailableMemoryPressureThresholds",
+                        "CompressParkableStrings",
+                        "PageAllocatorRetryOnCommitFailure",
+                        "TerminationTargetPolicy"
                     ]
                 },
                 {
@@ -6666,7 +6675,8 @@
                         "CommitAvailableModerateThresholdMB": "2000"
                     },
                     "enable_features": [
-                        "CommitAvailableMemoryPressureThresholds"
+                        "CommitAvailableMemoryPressureThresholds",
+                        "CompressParkableStrings"
                     ],
                     "disable_features": [
                         "BoostClosingTabs",
@@ -6677,7 +6687,8 @@
                 {
                     "name": "BoostClosingTab",
                     "enable_features": [
-                        "BoostClosingTabs"
+                        "BoostClosingTabs",
+                        "CompressParkableStrings"
                     ],
                     "disable_features": [
                         "CommitAvailableMemoryPressureThresholds",
@@ -6688,12 +6699,25 @@
                 {
                     "name": "TerminateRendererOnCommitExhaustion",
                     "enable_features": [
+                        "CompressParkableStrings",
                         "PageAllocatorRetryOnCommitFailure",
                         "TerminationTargetPolicy"
                     ],
                     "disable_features": [
                         "BoostClosingTabs",
                         "CommitAvailableMemoryPressureThresholds"
+                    ]
+                },
+                {
+                    "name": "DisableParkableStrings",
+                    "enable_features": [
+                        "BoostClosingTabs",
+                        "CommitAvailableMemoryPressureThresholds",
+                        "PageAllocatorRetryOnCommitFailure",
+                        "TerminationTargetPolicy"
+                    ],
+                    "disable_features": [
+                        "CompressParkableStrings"
                     ]
                 }
             ]
@@ -8911,25 +8935,6 @@
                         "DisableBruschettaInstallChecks"
                     ],
                     "min_os_version": "131.0.6740.0"
-                }
-            ]
-        }
-    ],
-    "DisableCompressParkableStrings": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "CompressParkableStrings"
-                    ]
                 }
             ]
         }
@@ -13513,6 +13518,7 @@
                         "EnableReadabilityHeuristic",
                         "EnableReaderMode",
                         "EnableReaderModeDefaultBrowserPromo",
+                        "EnableReaderModeTranslation",
                         "ReaderModeUseReadability"
                     ],
                     "disable_features": [
@@ -14069,6 +14075,28 @@
                 {
                     "name": "InputOnVizEnabled",
                     "enable_features": [
+                        "InputOnViz"
+                    ]
+                },
+                {
+                    "name": "InputOnVizPredictionAtDeadlineEnabled",
+                    "params": {
+                        "mode": "UseScrollPredictorForDeadline"
+                    },
+                    "enable_features": [
+                        "InputOnViz",
+                        "WaitForLateScrollEvents"
+                    ]
+                },
+                {
+                    "name": "InputOnVizDisabledPredictionAtDeadlineEnabled",
+                    "params": {
+                        "mode": "UseScrollPredictorForDeadline"
+                    },
+                    "enable_features": [
+                        "WaitForLateScrollEvents"
+                    ],
+                    "disable_features": [
                         "InputOnViz"
                     ]
                 }
@@ -26506,28 +26534,6 @@
                     "name": "VulkanV2",
                     "enable_features": [
                         "VulkanV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WaitForLateScrollEvents": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "PredictAtDeadline",
-                    "params": {
-                        "mode": "UseScrollPredictorForDeadline"
-                    },
-                    "enable_features": [
-                        "WaitForLateScrollEvents"
                     ]
                 }
             ]

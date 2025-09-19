@@ -461,7 +461,6 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
       if (cached_ml_types.has_value()) {
         field->set_ml_supported_types(cached_ml_types.value());
       }
-      field->set_nonce(cached_field->nonce());
       field->SetHtmlType(cached_field->html_type(), cached_field->html_mode());
       field->set_credit_card_number_offset(
           cached_field->credit_card_number_offset());
@@ -762,7 +761,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     const AutofillField* field = form.field(i);
     const std::u16string& name = [&]() -> const std::u16string& {
       if (auto it = parseable_names.find(field->global_id());
-          it != parseable_labels.end()) {
+          it != parseable_names.end()) {
         return it->second;
       }
       return field->name();

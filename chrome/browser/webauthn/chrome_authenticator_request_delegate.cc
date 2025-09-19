@@ -236,36 +236,6 @@ bool PasswordsUsable(int credential_types, UIPresentation ui_presentation) {
 }  // namespace
 
 // static
-ChromeAuthenticatorRequestDelegate*
-ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-    content::RenderFrameHost* render_frame_host) {
-  // RenderFrameHosts which are not exposed to the user can't create
-  // authenticator request delegate.
-  if (!render_frame_host->IsActive()) {
-    return nullptr;
-  }
-
-  auto* const web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents) {
-    return nullptr;
-  }
-  if (FromWebContents(web_contents)) {
-    return nullptr;
-  }
-
-  CreateForWebContents(web_contents, render_frame_host);
-  return FromWebContents(web_contents);
-}
-
-// static
-ChromeAuthenticatorRequestDelegate*
-ChromeAuthenticatorRequestDelegate::GetRequestDelegate(
-    content::WebContents* web_contents) {
-  return FromWebContents(web_contents);
-}
-
-// static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kSecurityKeyPermitAttestation);
@@ -304,10 +274,8 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
-    content::WebContents* web_contents,
     content::RenderFrameHost* render_frame_host)
-    : WebContentsUserData(*web_contents),
-      render_frame_host_id_(render_frame_host->GetGlobalId()),
+    : render_frame_host_id_(render_frame_host->GetGlobalId()),
       dialog_model_(base::MakeRefCounted<AuthenticatorRequestDialogModel>(
           GetRenderFrameHost())),
       dialog_controller_(std::make_unique<AuthenticatorRequestDialogController>(
@@ -320,17 +288,14 @@ ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
 }
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
+  // Currently, completion of the request is indicated by //content destroying
+  // this delegate.
   dialog_model_->OnRequestComplete();
   dialog_model_->observers.RemoveObserver(this);
 
   if (g_observer) {
-    g_observer->Destroyed(this);
+    g_observer->OnDestroy(this);
   }
-}
-
-void ChromeAuthenticatorRequestDelegate::Cleanup() {
-  GetWebContents().RemoveUserData(
-      ChromeAuthenticatorRequestDelegate::UserDataKey());
 }
 
 // static
@@ -1314,5 +1279,3 @@ void ChromeAuthenticatorRequestDelegate::UpdateModelForTransportAvailability(
   dialog_model_->is_off_the_record = tai.is_off_the_record_context;
   dialog_model_->platform_has_biometrics = tai.platform_has_biometrics;
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAuthenticatorRequestDelegate);

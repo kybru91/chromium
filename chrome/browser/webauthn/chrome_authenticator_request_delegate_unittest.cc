@@ -73,9 +73,6 @@
 #include "chrome/test/base/testing_profile.h"
 #endif  // BUILDFLAG(IS_MAC)
 
-#include "content/public/test/prerender_test_util.h"
-#include "third_party/blink/public/common/features.h"
-
 namespace {
 
 static constexpr char kRpId[] = "example.com";
@@ -315,7 +312,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
     test_case++;
 
     MockCableDiscoveryFactory discovery_factory;
-    ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
     delegate.SetRelyingPartyId(kRpId);
     delegate.ConfigureDiscoveries(
         url::Origin::Create(GURL(test.origin)), test.origin,
@@ -362,7 +359,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, NoExtraDiscoveriesWithoutUI) {
   for (const bool disable_ui : {false, true}) {
     SCOPED_TRACE(disable_ui);
 
-    ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
     delegate.SetRelyingPartyId(kRpId);
     if (disable_ui) {
       delegate.SetUIPresentation(UIPresentation::kDisabled);
@@ -397,7 +394,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ConditionalUI) {
   // Enabling conditional mode should cause the modal dialog to stay hidden at
   // the beginning of a request. An omnibar icon might be shown instead.
   for (bool conditional_ui : {true, false}) {
-    ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
     delegate.SetUIPresentation(conditional_ui ? UIPresentation::kAutofill
                                               : UIPresentation::kModal);
     delegate.SetRelyingPartyId(kRpId);
@@ -480,7 +477,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, FilterGoogleComPasskeys) {
     data.has_icloud_keychain_credential = device::FidoRequestHandlerBase::
         RecognizedCredential::kHasRecognizedCredential;
 
-    ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
     delegate.SetRelyingPartyId(test.rp_id);
     delegate.RegisterActionCallbacks(
         base::DoNothing(), base::DoNothing(), base::DoNothing(),
@@ -530,7 +527,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   data.has_platform_authenticator_credential = device::FidoRequestHandlerBase::
       RecognizedCredential::kHasRecognizedCredential;
 
-  ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   delegate.SetRelyingPartyId(kGoogleRpId);
   delegate.RegisterActionCallbacks(
       base::DoNothing(), base::DoNothing(), base::DoNothing(),
@@ -713,7 +710,7 @@ TEST_P(ChromeAuthenticatorRequestDelegateTestWithPassword, DiscoverPasswords) {
   bool enable_password = GetParam();
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kOrigin));
-  ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   auto* password_fetcher = new FakePasswordCredentialFetcher(main_rfh());
   PasswordCredentialFetcher::SetInstanceForTesting(password_fetcher);
   auto password_ui_controller =
@@ -754,7 +751,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TryToShowUiNoImmediateCredentials) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kOrigin));
-  ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   auto* password_fetcher = new FakePasswordCredentialFetcher(main_rfh());
   PasswordCredentialFetcher::SetInstanceForTesting(password_fetcher);
   auto password_ui_controller =
@@ -797,7 +794,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TryToShowUiHasImmediateCredentials) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kOrigin));
-  ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   auto* password_fetcher = new FakePasswordCredentialFetcher(main_rfh());
   PasswordCredentialFetcher::SetInstanceForTesting(password_fetcher);
   auto password_ui_controller =
@@ -854,7 +851,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ImmediateMediationRateLimit) {
   // Navigate to commit the origin.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kOrigin));
-  ChromeAuthenticatorRequestDelegate delegate(web_contents(), main_rfh());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   delegate.SetRelyingPartyId(kRpId);
   delegate.SetUIPresentation(UIPresentation::kModalImmediate);
 
@@ -913,95 +910,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ImmediateMediationRateLimit) {
     testing::Mock::VerifyAndClearExpectations(
         &mock_immediate_not_found_callback);
   }
-}
-
-TEST_F(ChromeAuthenticatorRequestDelegateTest,
-       SingleWebContents_AtMostOneSimultaneousRequest) {
-  auto* first_request =
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-          web_contents()->GetPrimaryMainFrame());
-  ASSERT_TRUE(first_request);
-
-  ASSERT_FALSE(ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-      web_contents()->GetPrimaryMainFrame()));
-
-  first_request->Cleanup();
-  ASSERT_TRUE(ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-      web_contents()->GetPrimaryMainFrame()));
-}
-
-TEST_F(ChromeAuthenticatorRequestDelegateTest,
-       TwoWebContents_TwoSimultaneousRequests) {
-  auto* first_request =
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-          web_contents()->GetPrimaryMainFrame());
-
-  auto second_web_contents = CreateTestWebContents();
-  auto* second_request =
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-          second_web_contents->GetPrimaryMainFrame());
-
-  ASSERT_TRUE(first_request);
-  ASSERT_TRUE(second_request);
-}
-
-class ChromeAuthenticatorRequestDelegateFencedFramesTest
-    : public ChromeAuthenticatorRequestDelegateTest {
- public:
-  ChromeAuthenticatorRequestDelegateFencedFramesTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kFencedFrames, {{"implementation_type", "mparch"}});
-  }
-  ~ChromeAuthenticatorRequestDelegateFencedFramesTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ChromeAuthenticatorRequestDelegateFencedFramesTest,
-       SingleWebContents_SimultaneousRequestInFencedFrame) {
-  // Navigate to an initial page.
-  NavigateAndCommit(GURL("https://example.com"));
-
-  auto* first_request =
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-          web_contents()->GetPrimaryMainFrame());
-
-  content::RenderFrameHost* fenced_frame_root =
-      content::RenderFrameHostTester::For(main_rfh())->AppendFencedFrame();
-  auto* second_request =
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
-          fenced_frame_root);
-
-  ASSERT_TRUE(first_request);
-  ASSERT_FALSE(second_request);
-}
-
-class ChromeAuthenticatorRequestDelegatePrerenderTest
-    : public ChromeAuthenticatorRequestDelegateTest {
- public:
-  ChromeAuthenticatorRequestDelegatePrerenderTest() = default;
-
- private:
-  content::test::ScopedPrerenderFeatureList prerender_feature_list_;
-};
-
-TEST_F(ChromeAuthenticatorRequestDelegatePrerenderTest,
-       SingleWebContents_OneRequestInPrerendering) {
-  content::test::ScopedPrerenderWebContentsDelegate web_contents_delegate(
-      *web_contents());
-
-  // Navigate to an initial page.
-  NavigateAndCommit(GURL("https://example.com"));
-
-  // Set prerendering loading.
-  const GURL prerender_url("https://example.com/?prerendering");
-  auto* prerender_rfh = content::WebContentsTester::For(web_contents())
-                            ->AddPrerenderAndCommitNavigation(prerender_url);
-  DCHECK_NE(prerender_rfh, nullptr);
-
-  ASSERT_FALSE(
-      ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(prerender_rfh));
 }
 
 }  // namespace

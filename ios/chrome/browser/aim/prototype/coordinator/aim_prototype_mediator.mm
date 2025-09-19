@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/aim/prototype/ui/aim_input_item.h"
 #import "ios/chrome/browser/favicon/model/favicon_loader.h"
 #import "ios/chrome/browser/intelligence/proto_wrappers/page_context_wrapper.h"
+#import "ios/chrome/browser/shared/model/url/url_util.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
@@ -207,11 +208,22 @@ size_t WhitespaceCount(const std::u16string& string) {
                 }];
 }
 
+- (void)setConsumer:(id<AIMPrototypeConsumer>)consumer {
+  _consumer = consumer;
+
+  if (!_webStateList) {
+    return;
+  }
+
+  web::WebState* webState = _webStateList->GetActiveWebState();
+  [_consumer
+      setCanAttachTabAction:webState && !IsUrlNtp(webState->GetVisibleURL())];
+}
+
 - (void)processPDFFileURL:(GURL)PDFFileURL {
   AIMInputItem* item = [[AIMInputItem alloc]
       initWithAimInputItemType:AIMInputItemType::kAIMInputItemTypeFile];
   item.title = base::SysUTF8ToNSString(PDFFileURL.ExtractFileName());
-  item.subtitle = @"PDF";
   [_items addObject:item];
   [self updateConsumerItems];
   const base::UnguessableToken& token = item.token;
@@ -477,7 +489,6 @@ size_t WhitespaceCount(const std::u16string& string) {
   AIMInputItem* item = [[AIMInputItem alloc]
       initWithAimInputItemType:AIMInputItemType::kAIMInputItemTypeTab];
   item.title = base::SysUTF16ToNSString(webState->GetTitle());
-  item.subtitle = base::SysUTF8ToNSString(webState->GetVisibleURL().host());
   [_items addObject:item];
   [self updateConsumerItems];
   __block const base::UnguessableToken& token = item.token;

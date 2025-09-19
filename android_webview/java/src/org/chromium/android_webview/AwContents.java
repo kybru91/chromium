@@ -142,6 +142,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.url.GURL;
 
@@ -512,8 +513,6 @@ public class AwContents implements SmartClipProvider {
     private final AwDisplayModeController mDisplayModeController;
     private final Rect mCachedSafeAreaRect = new Rect();
 
-    private AwFrameMetricsListener mAwFrameMetricsListener;
-
     private AwDarkMode mAwDarkMode;
     private AwWebContentsMetricsRecorder mAwWebContentsMetricsRecorder;
 
@@ -841,10 +840,6 @@ public class AwContents implements SmartClipProvider {
                 mZoomControls.setAutoDismissed(false);
             }
             mZoomControls.invokeZoomPicker();
-            if (mAwFrameMetricsListener != null) {
-                mAwFrameMetricsListener.onWebContentsScrollStateUpdate(
-                        /* isScrolling= */ true, mId);
-            }
             if (AwFeatureMap.isEnabled(
                     AwFeatures.WEBVIEW_DO_NOT_SEND_ACCESSIBILITY_EVENTS_ON_GSU)) {
                 mScrollAccessibilityHelper.setIsInAScroll(true);
@@ -858,10 +853,6 @@ public class AwContents implements SmartClipProvider {
                 // A call to invoke is required so that a delayed hide task can be posted by
                 // android.
                 mZoomControls.invokeZoomPicker();
-            }
-            if (mAwFrameMetricsListener != null) {
-                mAwFrameMetricsListener.onWebContentsScrollStateUpdate(
-                        /* isScrolling= */ false, mId);
             }
             if (AwFeatureMap.isEnabled(
                     AwFeatures.WEBVIEW_DO_NOT_SEND_ACCESSIBILITY_EVENTS_ON_GSU)) {
@@ -3338,14 +3329,6 @@ public class AwContents implements SmartClipProvider {
         mIsWindowVisible = visible;
         if (!isDestroyed(NO_WARN)) {
             AwContentsJni.get().setWindowVisibility(mNativeAwContents, mIsWindowVisible);
-
-            if (mAwFrameMetricsListener != null) {
-                if (mIsWindowVisible) {
-                    mAwFrameMetricsListener.onWebViewVisible();
-                } else {
-                    mAwFrameMetricsListener.onWebViewHidden();
-                }
-            }
         }
         // Using TimeUtils to allow it being overridden in tests.
         mLastWindowVisibleTime = visible ? CURRENTLY_VISIBLE : TimeUtils.uptimeMillis();
@@ -4531,7 +4514,9 @@ public class AwContents implements SmartClipProvider {
             mIsAttachedToWindow = true;
             mTemporarilyDetached = false;
 
-            mWindowAndroid.getWindowAndroid().getDisplay().addObserver(mDisplayObserver);
+            DisplayAndroid display = mWindowAndroid.getWindowAndroid().getDisplay();
+            mDisplayObserver.onDIPScaleChanged(display.getDipScale());
+            display.addObserver(mDisplayObserver);
 
             mViewEventSink.onAttachedToWindow();
             AwContentsJni.get()
@@ -4556,10 +4541,6 @@ public class AwContents implements SmartClipProvider {
                     StylusHandwritingFeatureMap.CACHE_STYLUS_SETTINGS)) {
                 StylusWritingSettingsState.getInstance().registerObserver(mStylusWritingController);
             }
-
-            mAwFrameMetricsListener =
-                    AwFrameMetricsListener.maybeCreate(
-                            mContainerView, mWindowAndroid.getWindowAndroid());
 
             if (mDisplayCutoutController != null) mDisplayCutoutController.onAttachedToWindow();
 
@@ -4606,12 +4587,6 @@ public class AwContents implements SmartClipProvider {
 
             mScrollAccessibilityHelper.removePostedCallbacks();
             mZoomControls.dismissZoomPicker();
-
-            mAwFrameMetricsListener =
-                    AwFrameMetricsListener.maybeClear(
-                            mAwFrameMetricsListener,
-                            mContainerView,
-                            mWindowAndroid.getWindowAndroid());
 
             if (mDisplayCutoutController != null) {
                 mDisplayCutoutController.onDetachedFromWindow();

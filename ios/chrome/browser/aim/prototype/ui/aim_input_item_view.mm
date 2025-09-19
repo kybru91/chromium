@@ -10,13 +10,13 @@
 
 namespace {
 // The input item max width.
-const CGFloat kInputItemMaxWidth = 250.0f;
+const CGFloat kInputItemMaxWidth = 136.0f;
 // The input item height.
-const CGFloat kInputItemHeight = 42.0f;
+const CGFloat kInputItemHeight = 36.0f;
 // The input item padding.
 const CGFloat kPadding = 10.0;
 // The leading icon size.
-const CGFloat kLeadingIconSize = 24.0;
+const CGFloat kLeadingIconSize = 16;
 // The preview image corner radius.
 const CGFloat kPreviewImageCornerRadius = 9.0;
 // The leading icon corner radius.
@@ -24,9 +24,13 @@ const CGFloat kLeadingIconCornerRadius = 6.0;
 // Labels font size.
 const CGFloat kLabelFontSize = 13.0;
 // The preview image size.
-const CGFloat kPreviewImageSize = 30.0;
+const CGFloat kPreviewImageSize = 28.0;
 // The preview image top and bottom padding.
-const CGFloat kPreviewImageTopBottomPadding = 6.0;
+const CGFloat kPreviewImageTopBottomPadding = 4.0;
+/// The fade view width.
+const CGFloat kFadeViewWidth = 20.0f;
+/// The title to button padding.
+const CGFloat kTitleCloseButtonPadding = 6.0;
 }  // namespace
 
 @interface AimInputItemView ()
@@ -43,8 +47,8 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
   UIImageView* _previewImageView;
   // The title label for file/tab type of items.
   UILabel* _titleLabel;
-  // The subtitle label for file/tab type of items.
-  UILabel* _subtitleLabel;
+  // The fade view for the title label.
+  UIView* _fadeView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -56,25 +60,38 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
   return self;
 }
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  [self updateFadeViewVisibility];
+  _fadeView.layer.sublayers.firstObject.frame = _fadeView.bounds;
+}
+
 - (void)configureWithItem:(AIMInputItem*)item {
   BOOL isImageItem = item.type == AIMInputItemType::kAIMInputItemTypeImage;
 
   _previewImageView.hidden = !isImageItem;
   _leadingIconImageView.hidden = isImageItem;
   _titleLabel.hidden = isImageItem;
-  _subtitleLabel.hidden = isImageItem;
 
   if (isImageItem) {
     _previewImageView.image = item.previewImage;
   } else {
     if (item.type == AIMInputItemType::kAIMInputItemTypeFile) {
       _leadingIconImageView.image =
-          DefaultSymbolWithPointSize(kDocSymbol, kLeadingIconSize);
+          DefaultSymbolWithPointSize(kTextDocument, kLeadingIconSize);
     } else {
       _leadingIconImageView.image = item.leadingIconImage;
     }
     _titleLabel.text = item.title;
-    _subtitleLabel.text = item.subtitle;
+  }
+  [self updateFadeViewVisibility];
+}
+
+- (void)updateFadeViewVisibility {
+  if (_titleLabel.intrinsicContentSize.width > _titleLabel.bounds.size.width) {
+    _fadeView.hidden = NO;
+  } else {
+    _fadeView.hidden = YES;
   }
 }
 
@@ -82,14 +99,14 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
   _leadingIconImageView.image = nil;
   _previewImageView.image = nil;
   _titleLabel.text = nil;
-  _subtitleLabel.text = nil;
 }
 
 - (void)setupViews {
   // Icon Image View
   _leadingIconImageView = [[UIImageView alloc] init];
   _leadingIconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-  _leadingIconImageView.backgroundColor = [UIColor whiteColor];
+  _leadingIconImageView.backgroundColor =
+      [UIColor colorNamed:kSecondaryBackgroundColor];
   _leadingIconImageView.layer.cornerRadius = kLeadingIconCornerRadius;
   _leadingIconImageView.clipsToBounds = YES;
   _leadingIconImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -99,23 +116,29 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
   _titleLabel = [[UILabel alloc] init];
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _titleLabel.font = PreferredFontForTextStyle(
-      UIFontTextStyleFootnote, UIFontWeightMedium, kLabelFontSize);
-  _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+      UIFontTextStyleFootnote, UIFontWeightRegular, kLabelFontSize);
+  _titleLabel.textColor = UIColor.blackColor;
+  _titleLabel.lineBreakMode = NSLineBreakByClipping;
   [_titleLabel
       setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                       forAxis:UILayoutConstraintAxisHorizontal];
   [self addSubview:_titleLabel];
 
-  // Subtitle Label
-  _subtitleLabel = [[UILabel alloc] init];
-  _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  _subtitleLabel.font = PreferredFontForTextStyle(
-      UIFontTextStyleFootnote, UIFontWeightMedium, kLabelFontSize);
-  _subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  [_subtitleLabel
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-  [self addSubview:_subtitleLabel];
+  // Fade view
+  _fadeView = [[UIView alloc] init];
+  _fadeView.translatesAutoresizingMaskIntoConstraints = NO;
+  _fadeView.hidden = YES;
+  CAGradientLayer* gradientLayer = [CAGradientLayer layer];
+  gradientLayer.colors = @[
+    (id)[[UIColor colorNamed:kSecondaryBackgroundColor]
+        colorWithAlphaComponent:0.0]
+        .CGColor,
+    (id)[UIColor colorNamed:kSecondaryBackgroundColor].CGColor
+  ];
+  gradientLayer.startPoint = CGPointMake(0.0, 0.5);
+  gradientLayer.endPoint = CGPointMake(1.0, 0.5);
+  [_fadeView.layer insertSublayer:gradientLayer atIndex:0];
+  [self addSubview:_fadeView];
 
   // Leading Image View
   _previewImageView = [[UIImageView alloc] init];
@@ -129,7 +152,7 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
 
   _closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIImage* image = SymbolWithPalette(
-      DefaultSymbolWithPointSize(kXMarkCircleFillSymbol, kLeadingIconSize),
+      DefaultSymbolWithPointSize(kXMarkSymbol, kLeadingIconSize),
       @[ [UIColor colorNamed:kTextSecondaryColor], UIColor.whiteColor ]);
   [_closeButton setImage:image forState:UIControlStateNormal];
   _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -161,7 +184,7 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
 
     // Close Button
     [_closeButton.trailingAnchor constraintEqualToAnchor:self.trailingAnchor
-                                                constant:-kPadding],
+                                                constant:-13],
     [_closeButton.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
 
     // Title Label
@@ -170,18 +193,15 @@ const CGFloat kPreviewImageTopBottomPadding = 6.0;
                        constant:kPadding],
     [_titleLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:_closeButton.leadingAnchor
-                                 constant:-kPadding],
-    [_titleLabel.bottomAnchor constraintEqualToAnchor:self.centerYAnchor
-                                             constant:-2.0],
+                                 constant:-kTitleCloseButtonPadding],
+    [_titleLabel.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
 
-    // Subtitle Label
-    [_subtitleLabel.leadingAnchor
-        constraintEqualToAnchor:_titleLabel.leadingAnchor],
-    [_subtitleLabel.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor
-                                             constant:2.0],
-    [_subtitleLabel.trailingAnchor
-        constraintLessThanOrEqualToAnchor:_closeButton.leadingAnchor
-                                 constant:-kPadding],
+    // Fade view
+    [_fadeView.trailingAnchor
+        constraintEqualToAnchor:_titleLabel.trailingAnchor],
+    [_fadeView.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
+    [_fadeView.bottomAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor],
+    [_fadeView.widthAnchor constraintEqualToConstant:kFadeViewWidth],
 
     // Leading Image View
     [_previewImageView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor

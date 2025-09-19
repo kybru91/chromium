@@ -38,6 +38,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_controller.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "device/fido/fido_request_handler_base.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -116,7 +117,7 @@ class ChromeWebAuthnCredentialsDelegateTest
 
 #if !BUILDFLAG(IS_ANDROID)
     authenticator_request_delegate_ =
-        ChromeAuthenticatorRequestDelegate::CreateRequestDelegate(
+        AuthenticatorRequestScheduler::CreateRequestDelegate(
             web_contents()->GetPrimaryMainFrame());
     // Setting the RPID creates the dialog model.
     authenticator_request_delegate_->SetRelyingPartyId("rpId");
@@ -135,8 +136,9 @@ class ChromeWebAuthnCredentialsDelegateTest
 
   void TearDown() override {
 #if !BUILDFLAG(IS_ANDROID)
-    authenticator_request_delegate_ = nullptr;
-#endif  // !BUILDFLAG(IS_ANDROID)
+    authenticator_request_delegate_.reset();
+#endif
+
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -188,7 +190,8 @@ class ChromeWebAuthnCredentialsDelegateTest
         ->GetDelegateForFrame(web_contents()->GetPrimaryMainFrame());
   }
 #if !BUILDFLAG(IS_ANDROID)
-  raw_ptr<ChromeAuthenticatorRequestDelegate> authenticator_request_delegate_;
+  std::unique_ptr<ChromeAuthenticatorRequestDelegate>
+      authenticator_request_delegate_;
 #else
   raw_ptr<WebAuthnRequestDelegateAndroid> delegate_;
   std::optional<std::vector<uint8_t>> selected_id_;
